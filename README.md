@@ -96,6 +96,35 @@ A standalone **Model Context Protocol (MCP) Server** for [LookinServer](https://
 
 ---
 
+## Prerequisites: Integrate LookinServer into Your iOS App
+
+For `lookin-mcp` to connect to your iOS app, the app must have [**LookinServer**](https://github.com/QMUI/LookinServer) integrated into its debug build. LookinServer runs a lightweight in-app server that listens for inspector connections on localhost port `47164` (Simulator) or via usbmux (`47175`, physical devices).
+
+### Integration Options
+
+#### Option A: Swift Package Manager (SPM) - Recommended
+1. In Xcode, select **File** > **Add Package Dependencies...**
+2. Enter the repository URL:
+   ```
+   https://github.com/QMUI/LookinServer.git
+   ```
+3. Add `LookinServer` to your main application target (configure it for **Debug** builds only).
+
+#### Option B: CocoaPods
+Add `LookinServer` to your `Podfile` for debug configurations:
+
+```ruby
+pod 'LookinServer', :configurations => ['Debug']
+
+# If your project uses Swift and you want Swift extensions:
+pod 'LookinServer/Swift', :configurations => ['Debug']
+```
+Then run `pod install`.
+
+> **Note on Swift Methods**: Lookin inspects views via the Objective-C runtime. If you want custom Swift methods, properties, or tokens to be visible and callable by `lookin-mcp`, annotate them with `@objc` (e.g. `@objc func setBackgroundColorToken(_ color: UIColor)`).
+
+---
+
 ## Installation & Setup
 
 ### 1. Build from Source
