@@ -50,3 +50,38 @@ public enum LookinErrorCode: Int, Sendable {
 
     case unsupportedFileType = -700
 }
+
+public enum LookinAttrType: Int, Sendable {
+    case none = 0
+    case void = 1
+    case char = 2
+    case int = 3
+    case short = 4
+    case long = 5
+    case longLong = 6
+    case unsignedChar = 7
+    case unsignedInt = 8
+    case unsignedShort = 9
+    case unsignedLong = 10
+    case unsignedLongLong = 11
+    case float = 12
+    case double = 13
+    case bool = 14
+    case sel = 15
+    case `class` = 16
+    case point = 17
+    case vector = 18
+    case size = 19
+    case rect = 20
+    case affineTransform = 21
+    case edgeInsets = 22
+    case offset = 23
+    case string = 24
+    case enumInt = 25
+    case enumLong = 26
+    case color = 27
+    case customObj = 28
+    case enumString = 29
+    case shadow = 30
+    case json = 31
+}

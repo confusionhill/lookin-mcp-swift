@@ -22,44 +22,46 @@ public final class MutationTools: Sendable {
         case "hidden", "ishidden":
             setterSelector = "setHidden:"
             getterSelector = "isHidden"
-            attrType = 1
+            attrType = LookinAttrType.bool.rawValue
             rawValue = NSNumber(value: value.lowercased() == "true" || value == "1")
         case "alpha":
             setterSelector = "setAlpha:"
             getterSelector = "alpha"
-            attrType = 2
+            attrType = LookinAttrType.float.rawValue
             let floatVal = Float(value) ?? 1.0
             rawValue = NSNumber(value: floatVal)
         case "userinteractionenabled", "isuserinteractionenabled":
             setterSelector = "setUserInteractionEnabled:"
             getterSelector = "isUserInteractionEnabled"
-            attrType = 1
+            attrType = LookinAttrType.bool.rawValue
             rawValue = NSNumber(value: value.lowercased() == "true" || value == "1")
         case "text":
             setterSelector = "setText:"
             getterSelector = "text"
-            attrType = 4
+            attrType = LookinAttrType.string.rawValue
             rawValue = value as NSString
         case "backgroundcolor", "bgcolor":
             setterSelector = "setBackgroundColor:"
             getterSelector = "backgroundColor"
-            attrType = 27 // LookinAttrTypeUIColor
+            attrType = LookinAttrType.color.rawValue
             rawValue = Self.parseColorValue(value)
         case "textcolor":
             setterSelector = "setTextColor:"
             getterSelector = "textColor"
-            attrType = 27 // LookinAttrTypeUIColor
+            attrType = LookinAttrType.color.rawValue
             rawValue = Self.parseColorValue(value)
         default:
             // Custom selector pass-through
             setterSelector = property.hasSuffix(":") ? property : "\(property):"
             getterSelector = nil
-            attrType = 0
             if let boolVal = Bool(value) {
+                attrType = LookinAttrType.bool.rawValue
                 rawValue = NSNumber(value: boolVal)
             } else if let numVal = Double(value) {
+                attrType = LookinAttrType.double.rawValue
                 rawValue = NSNumber(value: numVal)
             } else {
+                attrType = LookinAttrType.string.rawValue
                 rawValue = value as NSString
             }
         }

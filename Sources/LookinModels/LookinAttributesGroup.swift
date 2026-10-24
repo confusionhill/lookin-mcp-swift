@@ -4,29 +4,56 @@ import Foundation
 public final class LookinAttribute: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
-    @objc public var attrId: String?
-    @objc public var title: String?
-    @objc public var valueType: Int = 0
+    @objc public var identifier: String?
+    @objc public var displayTitle: String?
+    @objc public var attrType: Int = 0
     @objc public var value: Any?
+    @objc public var extraValue: Any?
+    @objc public var customSetterID: String?
+
+    @objc public var attrId: String? {
+        get { identifier }
+        set { identifier = newValue }
+    }
+    @objc public var title: String? {
+        get { displayTitle }
+        set { displayTitle = newValue }
+    }
+    @objc public var valueType: Int {
+        get { attrType }
+        set { attrType = newValue }
+    }
 
     public override init() {
         super.init()
     }
 
     public required init?(coder: NSCoder) {
-        self.attrId = coder.decodeObject(of: NSString.self, forKey: "attrId") as String?
-        self.title = coder.decodeObject(of: NSString.self, forKey: "title") as String?
-        self.valueType = coder.decodeInteger(forKey: "valueType")
+        self.displayTitle = (coder.decodeObject(forKey: "displayTitle") as? String) ?? (coder.decodeObject(forKey: "title") as? String)
+        self.identifier = (coder.decodeObject(forKey: "identifier") as? String) ?? (coder.decodeObject(forKey: "attrId") as? String)
+        if coder.containsValue(forKey: "attrType") {
+            self.attrType = coder.decodeInteger(forKey: "attrType")
+        } else {
+            self.attrType = coder.decodeInteger(forKey: "valueType")
+        }
         self.value = coder.decodeObject(forKey: "value")
+        self.extraValue = coder.decodeObject(forKey: "extraValue")
+        self.customSetterID = coder.decodeObject(forKey: "customSetterID") as? String
         super.init()
     }
 
     public func encode(with coder: NSCoder) {
-        coder.encode(attrId as NSString?, forKey: "attrId")
-        coder.encode(title as NSString?, forKey: "title")
-        coder.encode(valueType, forKey: "valueType")
+        coder.encode(displayTitle as NSString?, forKey: "displayTitle")
+        coder.encode(identifier as NSString?, forKey: "identifier")
+        coder.encode(attrType, forKey: "attrType")
         if let value = value {
             coder.encode(value, forKey: "value")
+        }
+        if let extraValue = extraValue {
+            coder.encode(extraValue, forKey: "extraValue")
+        }
+        if let customSetterID = customSetterID {
+            coder.encode(customSetterID as NSString?, forKey: "customSetterID")
         }
     }
 }
@@ -35,23 +62,26 @@ public final class LookinAttribute: NSObject, NSSecureCoding {
 public final class LookinAttributesSection: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
-    @objc public var title: String?
+    @objc public var identifier: String?
     @objc public var attributes: [LookinAttribute]?
+
+    @objc public var title: String? {
+        get { identifier }
+        set { identifier = newValue }
+    }
 
     public override init() {
         super.init()
     }
 
     public required init?(coder: NSCoder) {
-        self.title = coder.decodeObject(of: NSString.self, forKey: "title") as String?
-        if let attrs = coder.decodeObject(of: [NSArray.self, LookinAttribute.self], forKey: "attributes") as? [LookinAttribute] {
-            self.attributes = attrs
-        }
+        self.identifier = (coder.decodeObject(forKey: "identifier") as? String) ?? (coder.decodeObject(forKey: "title") as? String)
+        self.attributes = coder.decodeObject(forKey: "attributes") as? [LookinAttribute]
         super.init()
     }
 
     public func encode(with coder: NSCoder) {
-        coder.encode(title as NSString?, forKey: "title")
+        coder.encode(identifier as NSString?, forKey: "identifier")
         if let attributes = attributes {
             coder.encode(attributes as NSArray, forKey: "attributes")
         }
@@ -62,32 +92,47 @@ public final class LookinAttributesSection: NSObject, NSSecureCoding {
 public final class LookinAttributesGroup: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
-    @objc public var groupName: String?
-    @objc public var sections: [LookinAttributesSection]?
-    @objc public var attrList: [LookinAttribute]?
+    @objc public var userCustomTitle: String?
+    @objc public var identifier: String?
+    @objc public var attrSections: [LookinAttributesSection]?
+
+    @objc public var groupName: String? {
+        get { userCustomTitle ?? identifier }
+        set { userCustomTitle = newValue }
+    }
+    @objc public var sections: [LookinAttributesSection]? {
+        get { attrSections }
+        set { attrSections = newValue }
+    }
+    @objc public var attrList: [LookinAttribute]? {
+        get {
+            attrSections?.compactMap { $0.attributes }.flatMap { $0 }
+        }
+        set {
+            if let list = newValue {
+                let sec = LookinAttributesSection()
+                sec.attributes = list
+                attrSections = [sec]
+            }
+        }
+    }
 
     public override init() {
         super.init()
     }
 
     public required init?(coder: NSCoder) {
-        self.groupName = coder.decodeObject(of: NSString.self, forKey: "groupName") as String?
-        if let sec = coder.decodeObject(of: [NSArray.self, LookinAttributesSection.self], forKey: "sections") as? [LookinAttributesSection] {
-            self.sections = sec
-        }
-        if let list = coder.decodeObject(of: [NSArray.self, LookinAttribute.self], forKey: "attrList") as? [LookinAttribute] {
-            self.attrList = list
-        }
+        self.userCustomTitle = (coder.decodeObject(forKey: "userCustomTitle") as? String) ?? (coder.decodeObject(forKey: "groupName") as? String)
+        self.identifier = coder.decodeObject(forKey: "identifier") as? String
+        self.attrSections = (coder.decodeObject(forKey: "attrSections") as? [LookinAttributesSection]) ?? (coder.decodeObject(forKey: "sections") as? [LookinAttributesSection])
         super.init()
     }
 
     public func encode(with coder: NSCoder) {
-        coder.encode(groupName as NSString?, forKey: "groupName")
-        if let sections = sections {
-            coder.encode(sections as NSArray, forKey: "sections")
-        }
-        if let attrList = attrList {
-            coder.encode(attrList as NSArray, forKey: "attrList")
+        coder.encode(userCustomTitle as NSString?, forKey: "userCustomTitle")
+        coder.encode(identifier as NSString?, forKey: "identifier")
+        if let attrSections = attrSections {
+            coder.encode(attrSections as NSArray, forKey: "attrSections")
         }
     }
 }
