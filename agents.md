@@ -1,1 +1,1 @@
-REMEMBER TO COMMIT REGULARLY AND LOGICALLY. Ensure it's test driven
+REMEMBER TO COMMIT REGULARLY AND LOGICALLY. Ensure it's test driven, Follow Domain Driven Development and Clean code
