@@ -183,6 +183,12 @@ swift test
 
 ---
 
+## Similar Projects
+
+- [eval3/lookin-mcp](https://github.com/eval3/lookin-mcp/tree/master) - An alternative Lookin MCP server implementation.
+
+---
+
 ## License
 
 MIT
