@@ -14,7 +14,7 @@ struct LookinMCPMain {
 
     static func main() async throws {
         let server = LookinMCPServer()
-        fputs("Lookin MCP Server (v1.0.0) ready on stdio transport\n", stderr)
+        fputs("Lookin MCP Server (v0.1.0) ready on stdio transport\n", stderr)
         try await server.serve(over: [StdioTransport()], logger: lifecycleLogger)
     }
 }

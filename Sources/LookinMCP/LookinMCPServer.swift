@@ -5,7 +5,7 @@ import LookinModels
 
 /// LookinMCPServer acts as the thin MCP protocol and dispatch handler layer,
 /// routing MCP tool invocations to domain-specific handlers under `Tools/`.
-@MCPServer(name: "lookin-mcp", version: "1.0.0")
+@MCPServer(name: "lookin-mcp", version: "0.1.0")
 public final class LookinMCPServer: Sendable {
     private let client: LookinClient
     private let connectionTools: ConnectionTools
