@@ -271,6 +271,16 @@ public final class LookinMCPServer: Sendable {
             getterSelector = "text"
             attrType = 4
             rawValue = value as NSString
+        case "backgroundcolor", "bgcolor":
+            setterSelector = "setBackgroundColor:"
+            getterSelector = "backgroundColor"
+            attrType = 27 // LookinAttrTypeUIColor
+            rawValue = Self.parseColorValue(value)
+        case "textcolor":
+            setterSelector = "setTextColor:"
+            getterSelector = "textColor"
+            attrType = 27 // LookinAttrTypeUIColor
+            rawValue = Self.parseColorValue(value)
         default:
             // Custom selector pass-through
             setterSelector = property.hasSuffix(":") ? property : "\(property):"
@@ -363,5 +373,62 @@ public final class LookinMCPServer: Sendable {
         }
         #endif
         return nil
+    }
+
+    private static func parseColorValue(_ value: String) -> NSArray {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        switch trimmed {
+        case "purple":
+            return [NSNumber(value: 0.5), NSNumber(value: 0.0), NSNumber(value: 0.5), NSNumber(value: 1.0)]
+        case "red":
+            return [NSNumber(value: 1.0), NSNumber(value: 0.0), NSNumber(value: 0.0), NSNumber(value: 1.0)]
+        case "green":
+            return [NSNumber(value: 0.0), NSNumber(value: 1.0), NSNumber(value: 0.0), NSNumber(value: 1.0)]
+        case "blue":
+            return [NSNumber(value: 0.0), NSNumber(value: 0.0), NSNumber(value: 1.0), NSNumber(value: 1.0)]
+        case "yellow":
+            return [NSNumber(value: 1.0), NSNumber(value: 1.0), NSNumber(value: 0.0), NSNumber(value: 1.0)]
+        case "cyan":
+            return [NSNumber(value: 0.0), NSNumber(value: 1.0), NSNumber(value: 1.0), NSNumber(value: 1.0)]
+        case "magenta":
+            return [NSNumber(value: 1.0), NSNumber(value: 0.0), NSNumber(value: 1.0), NSNumber(value: 1.0)]
+        case "orange":
+            return [NSNumber(value: 1.0), NSNumber(value: 0.5), NSNumber(value: 0.0), NSNumber(value: 1.0)]
+        case "black":
+            return [NSNumber(value: 0.0), NSNumber(value: 0.0), NSNumber(value: 0.0), NSNumber(value: 1.0)]
+        case "white":
+            return [NSNumber(value: 1.0), NSNumber(value: 1.0), NSNumber(value: 1.0), NSNumber(value: 1.0)]
+        case "clear":
+            return [NSNumber(value: 0.0), NSNumber(value: 0.0), NSNumber(value: 0.0), NSNumber(value: 0.0)]
+        default:
+            if trimmed.hasPrefix("#") {
+                let hex = String(trimmed.dropFirst())
+                let scanner = Scanner(string: hex)
+                var rgbValue: UInt64 = 0
+                if scanner.scanHexInt64(&rgbValue) {
+                    if hex.count == 6 {
+                        let r = Double((rgbValue & 0xFF0000) >> 16) / 255.0
+                        let g = Double((rgbValue & 0x00FF00) >> 8) / 255.0
+                        let b = Double(rgbValue & 0x0000FF) / 255.0
+                        return [NSNumber(value: r), NSNumber(value: g), NSNumber(value: b), NSNumber(value: 1.0)]
+                    } else if hex.count == 8 {
+                        let r = Double((rgbValue & 0xFF000000) >> 24) / 255.0
+                        let g = Double((rgbValue & 0x00FF0000) >> 16) / 255.0
+                        let b = Double((rgbValue & 0x0000FF00) >> 8) / 255.0
+                        let a = Double(rgbValue & 0x000000FF) / 255.0
+                        return [NSNumber(value: r), NSNumber(value: g), NSNumber(value: b), NSNumber(value: a)]
+                    }
+                }
+            }
+            let parts = trimmed.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+            if parts.count >= 3 {
+                let r = parts[0] > 1.0 ? parts[0] / 255.0 : parts[0]
+                let g = parts[1] > 1.0 ? parts[1] / 255.0 : parts[1]
+                let b = parts[2] > 1.0 ? parts[2] / 255.0 : parts[2]
+                let a = parts.count >= 4 ? (parts[3] > 1.0 ? parts[3] / 255.0 : parts[3]) : 1.0
+                return [NSNumber(value: r), NSNumber(value: g), NSNumber(value: b), NSNumber(value: a)]
+            }
+            return [NSNumber(value: 0.5), NSNumber(value: 0.0), NSNumber(value: 0.5), NSNumber(value: 1.0)]
+        }
     }
 }

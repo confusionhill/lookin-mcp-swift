@@ -10,30 +10,38 @@ public final class LookinAttributeModification: NSObject, NSSecureCoding {
     @objc public var attrType: Int = 0
     @objc public var value: Any?
 
+    @objc public var clientReadableVersion: String? = LookinDefines.serverReadableVersion
+
     public override init() {
         super.init()
     }
 
-    public init(targetOid: UInt, setterSelector: String, getterSelector: String? = nil, attrType: Int = 0, value: Any? = nil) {
+    public init(targetOid: UInt, setterSelector: String, getterSelector: String? = nil, attrType: Int = 0, value: Any? = nil, clientReadableVersion: String? = LookinDefines.serverReadableVersion) {
         self.targetOid = targetOid
         self.setterSelector = setterSelector
         self.getterSelector = getterSelector
         self.attrType = attrType
         self.value = value
+        self.clientReadableVersion = clientReadableVersion
         super.init()
     }
 
     public required init?(coder: NSCoder) {
-        self.targetOid = UInt(coder.decodeInteger(forKey: "targetOid"))
-        self.setterSelector = coder.decodeObject(of: NSString.self, forKey: "setterSelector") as String? ?? ""
-        self.getterSelector = coder.decodeObject(of: NSString.self, forKey: "getterSelector") as String?
+        if let num = coder.decodeObject(forKey: "targetOid") as? NSNumber {
+            self.targetOid = num.uintValue
+        } else {
+            self.targetOid = UInt(coder.decodeInteger(forKey: "targetOid"))
+        }
+        self.setterSelector = coder.decodeObject(forKey: "setterSelector") as? String ?? ""
+        self.getterSelector = coder.decodeObject(forKey: "getterSelector") as? String
         self.attrType = coder.decodeInteger(forKey: "attrType")
         self.value = coder.decodeObject(forKey: "value")
+        self.clientReadableVersion = coder.decodeObject(forKey: "clientReadableVersion") as? String
         super.init()
     }
 
     public func encode(with coder: NSCoder) {
-        coder.encode(Int(targetOid), forKey: "targetOid")
+        coder.encode(NSNumber(value: targetOid), forKey: "targetOid")
         coder.encode(setterSelector as NSString, forKey: "setterSelector")
         if let getterSelector = getterSelector {
             coder.encode(getterSelector as NSString, forKey: "getterSelector")
@@ -41,6 +49,9 @@ public final class LookinAttributeModification: NSObject, NSSecureCoding {
         coder.encode(attrType, forKey: "attrType")
         if let value = value {
             coder.encode(value, forKey: "value")
+        }
+        if let clientReadableVersion = clientReadableVersion {
+            coder.encode(clientReadableVersion as NSString, forKey: "clientReadableVersion")
         }
     }
 }
