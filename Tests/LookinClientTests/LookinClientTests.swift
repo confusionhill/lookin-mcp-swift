@@ -3,7 +3,7 @@ import Network
 @testable import LookinClient
 @testable import LookinModels
 
-final class LookinClientTests: XCTestCase {
+final class LookinClientTests: XCTestCase, @unchecked Sendable {
     private var listener: NWListener?
     private var serverConnection: NWConnection?
     private let testPort: UInt16 = 58234

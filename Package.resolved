@@ -1,5 +1,5 @@
 {
-  "originHash" : "fb7a759a7a2c412abb11a1ca53187b9fb0805b1f91347fa260af19cd6e6ce298",
+  "originHash" : "1695e501ce0b2290344b76377315abc2167d6849012c50bca55e69e92f6ce2b9",
   "pins" : [
     {
       "identity" : "jsonfoundation",
@@ -105,8 +105,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log.git",
       "state" : {
-        "revision" : "c9c6bb9d275ec0d95c3ad16391f3f045dc623104",
-        "version" : "1.16.2"
+        "revision" : "4038b6a4f74a1426f47eb1dd5b4bb5628a15d597",
+        "version" : "1.16.1"
       }
     },
     {
@@ -159,8 +159,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swift-server/swift-service-lifecycle.git",
       "state" : {
-        "revision" : "a18ee16b8039866fd919bdb4e8e906882d4ecc75",
-        "version" : "2.13.0"
+        "revision" : "c55297914e26ce3085b73ca88c521ef99136f6ad",
+        "version" : "2.12.1"
       }
     },
     {
