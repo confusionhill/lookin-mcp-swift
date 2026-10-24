@@ -15,30 +15,46 @@ public final class LookinHierarchyInfo: NSObject, NSSecureCoding {
     }
 
     public required init?(coder: NSCoder) {
-        if let items = coder.decodeObject(of: [NSArray.self, LookinDisplayItem.self], forKey: "displayItems") as? [LookinDisplayItem] {
-            self.displayItems = items
+        let items = coder.decodeObject(forKey: "1") ?? coder.decodeObject(forKey: "displayItems")
+        if let displayItems = items as? [LookinDisplayItem] {
+            self.displayItems = displayItems
         }
-        self.colorAlias = coder.decodeObject(of: [NSDictionary.self, NSString.self, NSObject.self], forKey: "colorAlias") as? [String: Any]
-        if let collapsed = coder.decodeObject(of: [NSArray.self, NSString.self], forKey: "collapsedClassList") as? [String] {
-            self.collapsedClassList = collapsed
+
+        let app = coder.decodeObject(forKey: "2") ?? coder.decodeObject(forKey: "appInfo")
+        if let appInfo = app as? LookinAppInfo {
+            self.appInfo = appInfo
         }
-        self.appInfo = coder.decodeObject(of: LookinAppInfo.self, forKey: "appInfo")
+
+        let alias = coder.decodeObject(forKey: "3") ?? coder.decodeObject(forKey: "colorAlias")
+        if let colorAlias = alias as? [String: Any] {
+            self.colorAlias = colorAlias
+        }
+
+        let collapsed = coder.decodeObject(forKey: "4") ?? coder.decodeObject(forKey: "collapsedClassList")
+        if let collapsedList = collapsed as? [String] {
+            self.collapsedClassList = collapsedList
+        }
+
         self.serverVersion = coder.decodeInt32(forKey: "serverVersion")
         super.init()
     }
 
     public func encode(with coder: NSCoder) {
         if let displayItems = displayItems {
+            coder.encode(displayItems as NSArray, forKey: "1")
             coder.encode(displayItems as NSArray, forKey: "displayItems")
         }
+        if let appInfo = appInfo {
+            coder.encode(appInfo, forKey: "2")
+            coder.encode(appInfo, forKey: "appInfo")
+        }
         if let colorAlias = colorAlias {
+            coder.encode(colorAlias as NSDictionary, forKey: "3")
             coder.encode(colorAlias as NSDictionary, forKey: "colorAlias")
         }
         if let collapsedClassList = collapsedClassList {
+            coder.encode(collapsedClassList as NSArray, forKey: "4")
             coder.encode(collapsedClassList as NSArray, forKey: "collapsedClassList")
-        }
-        if let appInfo = appInfo {
-            coder.encode(appInfo, forKey: "appInfo")
         }
         coder.encode(serverVersion, forKey: "serverVersion")
     }

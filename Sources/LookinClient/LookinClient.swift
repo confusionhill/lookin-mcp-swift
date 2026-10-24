@@ -233,16 +233,32 @@ public final class LookinClient: @unchecked Sendable {
             do {
                 let unarchiver = try NSKeyedUnarchiver(forReadingFrom: frame.payload)
                 unarchiver.requiresSecureCoding = false
-                if let decoded = unarchiver.decodeObject(forKey: NSKeyedArchiveRootObjectKey) as? LookinConnectionResponseAttachment {
+                unarchiver.setClass(LookinConnectionResponseAttachment.self, forClassName: "LookinConnectionResponseAttachment")
+                unarchiver.setClass(LookinConnectionAttachment.self, forClassName: "LookinConnectionAttachment")
+                unarchiver.setClass(LookinAppInfo.self, forClassName: "LookinAppInfo")
+                unarchiver.setClass(LookinHierarchyInfo.self, forClassName: "LookinHierarchyInfo")
+                unarchiver.setClass(LookinDisplayItem.self, forClassName: "LookinDisplayItem")
+                unarchiver.setClass(LookinDisplayItemDetail.self, forClassName: "LookinDisplayItemDetail")
+                unarchiver.setClass(LookinObject.self, forClassName: "LookinObject")
+                unarchiver.setClass(LookinIvarTrace.self, forClassName: "LookinIvarTrace")
+                unarchiver.setClass(LookinAttributesGroup.self, forClassName: "LookinAttributesGroup")
+                unarchiver.setClass(LookinAttributesSection.self, forClassName: "LookinAttributesSection")
+                unarchiver.setClass(LookinAttribute.self, forClassName: "LookinAttribute")
+                unarchiver.setClass(LookinAttributeModification.self, forClassName: "LookinAttributeModification")
+                unarchiver.setClass(LookinStaticAsyncUpdateTask.self, forClassName: "LookinStaticAsyncUpdateTask")
+                unarchiver.setClass(LookinStaticAsyncUpdateTasksPackage.self, forClassName: "LookinStaticAsyncUpdateTasksPackage")
+
+                let rawObj = unarchiver.decodeObject(forKey: NSKeyedArchiveRootObjectKey)
+                if let decoded = rawObj as? LookinConnectionResponseAttachment {
                     attachment = decoded
-                } else if let genericAttach = unarchiver.decodeObject(forKey: NSKeyedArchiveRootObjectKey) as? LookinConnectionAttachment {
+                } else if let genericAttach = rawObj as? LookinConnectionAttachment {
                     let resp = LookinConnectionResponseAttachment()
                     resp.data = genericAttach.data
                     resp.dataType = genericAttach.dataType
                     attachment = resp
-                } else if let rawObj = unarchiver.decodeObject(forKey: NSKeyedArchiveRootObjectKey) {
+                } else if let someObj = rawObj {
                     let resp = LookinConnectionResponseAttachment()
-                    resp.data = rawObj
+                    resp.data = someObj
                     attachment = resp
                 } else {
                     attachment = LookinConnectionResponseAttachment()

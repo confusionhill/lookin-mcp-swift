@@ -13,9 +13,9 @@ public final class LookinIvarTrace: NSObject, NSSecureCoding {
     }
 
     public required init?(coder: NSCoder) {
-        self.ivarName = coder.decodeObject(of: NSString.self, forKey: "ivarName") as String?
-        self.ivarType = coder.decodeObject(of: NSString.self, forKey: "ivarType") as String?
-        self.ivarValue = coder.decodeObject(of: NSString.self, forKey: "ivarValue") as String?
+        self.ivarName = coder.decodeObject(forKey: "ivarName") as? String
+        self.ivarType = coder.decodeObject(forKey: "ivarType") as? String
+        self.ivarValue = coder.decodeObject(forKey: "ivarValue") as? String
         super.init()
     }
 
@@ -31,33 +31,41 @@ public final class LookinObject: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
     @objc public var oid: UInt = 0
-    @objc public var rawClassName: String?
     @objc public var memoryAddress: String?
     @objc public var classChainList: [String]?
     @objc public var ivarTraces: [LookinIvarTrace]?
     @objc public var specialTrace: String?
+
+    private var _rawClassName: String?
+    @objc public var rawClassName: String? {
+        get { _rawClassName ?? classChainList?.first }
+        set {
+            _rawClassName = newValue
+            if classChainList == nil, let val = newValue {
+                classChainList = [val]
+            }
+        }
+    }
 
     public override init() {
         super.init()
     }
 
     public required init?(coder: NSCoder) {
-        self.oid = UInt(coder.decodeInteger(forKey: "oid"))
-        self.rawClassName = coder.decodeObject(of: NSString.self, forKey: "rawClassName") as String?
-        self.memoryAddress = coder.decodeObject(of: NSString.self, forKey: "memoryAddress") as String?
-        if let chain = coder.decodeObject(of: [NSArray.self, NSString.self], forKey: "classChainList") as? [String] {
-            self.classChainList = chain
+        if let num = coder.decodeObject(forKey: "oid") as? NSNumber {
+            self.oid = num.uintValue
+        } else {
+            self.oid = UInt(coder.decodeInteger(forKey: "oid"))
         }
-        if let traces = coder.decodeObject(of: [NSArray.self, LookinIvarTrace.self], forKey: "ivarTraces") as? [LookinIvarTrace] {
-            self.ivarTraces = traces
-        }
-        self.specialTrace = coder.decodeObject(of: NSString.self, forKey: "specialTrace") as String?
+        self.memoryAddress = coder.decodeObject(forKey: "memoryAddress") as? String
+        self.classChainList = coder.decodeObject(forKey: "classChainList") as? [String]
+        self.ivarTraces = coder.decodeObject(forKey: "ivarTraces") as? [LookinIvarTrace]
+        self.specialTrace = coder.decodeObject(forKey: "specialTrace") as? String
         super.init()
     }
 
     public func encode(with coder: NSCoder) {
-        coder.encode(Int(oid), forKey: "oid")
-        coder.encode(rawClassName as NSString?, forKey: "rawClassName")
+        coder.encode(NSNumber(value: oid), forKey: "oid")
         coder.encode(memoryAddress as NSString?, forKey: "memoryAddress")
         if let classChainList = classChainList {
             coder.encode(classChainList as NSArray, forKey: "classChainList")

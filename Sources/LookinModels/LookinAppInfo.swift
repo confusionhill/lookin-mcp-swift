@@ -29,45 +29,90 @@ public final class LookinAppInfo: NSObject, NSSecureCoding {
     }
 
     public required init?(coder: NSCoder) {
+        self.serverVersion = coder.decodeInt32(forKey: "serverVersion")
+        self.serverReadableVersion = (coder.decodeObject(forKey: "serverReadableVersion") as? String)
+        self.swiftEnabledInLookinServer = coder.decodeInt32(forKey: "swiftEnabledInLookinServer")
+
+        // Keys "1" and "2" are NSData in LookinServer
+        let rawScreenshot = coder.decodeObject(forKey: "2") ?? coder.decodeObject(forKey: "screenshot")
+        if let data = rawScreenshot as? Data {
+            #if canImport(AppKit)
+            self.screenshot = NSImage(data: data) ?? data
+            #else
+            self.screenshot = data
+            #endif
+        } else {
+            self.screenshot = rawScreenshot
+        }
+
+        let rawIcon = coder.decodeObject(forKey: "1") ?? coder.decodeObject(forKey: "appIcon")
+        if let data = rawIcon as? Data {
+            #if canImport(AppKit)
+            self.appIcon = NSImage(data: data) ?? data
+            #else
+            self.appIcon = data
+            #endif
+        } else {
+            self.appIcon = rawIcon
+        }
+
+        self.appName = (coder.decodeObject(forKey: "5") ?? coder.decodeObject(forKey: "appName")) as? String
+        self.appBundleIdentifier = (coder.decodeObject(forKey: "appBundleIdentifier")) as? String
+        self.deviceDescription = (coder.decodeObject(forKey: "3") ?? coder.decodeObject(forKey: "deviceDescription")) as? String
+        self.osDescription = (coder.decodeObject(forKey: "4") ?? coder.decodeObject(forKey: "osDescription")) as? String
+        self.osMainVersion = UInt(coder.decodeInteger(forKey: "osMainVersion"))
+
+        let devType = (coder.containsValue(forKey: "8") ? coder.decodeInteger(forKey: "8") : coder.decodeInteger(forKey: "deviceType"))
+        self.deviceType = UInt(devType)
+
+        self.screenWidth = coder.containsValue(forKey: "6") ? coder.decodeDouble(forKey: "6") : coder.decodeDouble(forKey: "screenWidth")
+        self.screenHeight = coder.containsValue(forKey: "7") ? coder.decodeDouble(forKey: "7") : coder.decodeDouble(forKey: "screenHeight")
+        self.screenScale = coder.decodeDouble(forKey: "screenScale")
         self.appInfoIdentifier = UInt(coder.decodeInteger(forKey: "appInfoIdentifier"))
         self.shouldUseCache = coder.decodeBool(forKey: "shouldUseCache")
-        self.serverVersion = coder.decodeInt32(forKey: "serverVersion")
-        self.serverReadableVersion = coder.decodeObject(of: NSString.self, forKey: "serverReadableVersion") as String?
-        self.swiftEnabledInLookinServer = coder.decodeInt32(forKey: "swiftEnabledInLookinServer")
-        self.appName = coder.decodeObject(of: NSString.self, forKey: "appName") as String?
-        self.appBundleIdentifier = coder.decodeObject(of: NSString.self, forKey: "appBundleIdentifier") as String?
-        self.deviceDescription = coder.decodeObject(of: NSString.self, forKey: "deviceDescription") as String?
-        self.deviceType = UInt(coder.decodeInteger(forKey: "deviceType"))
-        self.osDescription = coder.decodeObject(of: NSString.self, forKey: "osDescription") as String?
-        self.osMainVersion = UInt(coder.decodeInteger(forKey: "osMainVersion"))
-        self.screenWidth = coder.decodeDouble(forKey: "screenWidth")
-        self.screenHeight = coder.decodeDouble(forKey: "screenHeight")
-        self.screenScale = coder.decodeDouble(forKey: "screenScale")
-        self.screenshot = coder.decodeObject(forKey: "screenshot")
-        self.appIcon = coder.decodeObject(forKey: "appIcon")
         super.init()
     }
 
     public func encode(with coder: NSCoder) {
-        coder.encode(Int(appInfoIdentifier), forKey: "appInfoIdentifier")
-        coder.encode(shouldUseCache, forKey: "shouldUseCache")
         coder.encode(serverVersion, forKey: "serverVersion")
         coder.encode(serverReadableVersion as NSString?, forKey: "serverReadableVersion")
         coder.encode(swiftEnabledInLookinServer, forKey: "swiftEnabledInLookinServer")
+
+        if let screenshot = screenshot {
+            #if canImport(AppKit)
+            if let img = screenshot as? NSImage, let tiff = img.tiffRepresentation {
+                coder.encode(tiff, forKey: "2")
+            } else {
+                coder.encode(screenshot, forKey: "2")
+            }
+            #else
+            coder.encode(screenshot, forKey: "2")
+            #endif
+        }
+
+        if let appIcon = appIcon {
+            #if canImport(AppKit)
+            if let img = appIcon as? NSImage, let tiff = img.tiffRepresentation {
+                coder.encode(tiff, forKey: "1")
+            } else {
+                coder.encode(appIcon, forKey: "1")
+            }
+            #else
+            coder.encode(appIcon, forKey: "1")
+            #endif
+        }
+
+        coder.encode(appName as NSString?, forKey: "5")
         coder.encode(appName as NSString?, forKey: "appName")
         coder.encode(appBundleIdentifier as NSString?, forKey: "appBundleIdentifier")
-        coder.encode(deviceDescription as NSString?, forKey: "deviceDescription")
-        coder.encode(Int(deviceType), forKey: "deviceType")
-        coder.encode(osDescription as NSString?, forKey: "osDescription")
+        coder.encode(deviceDescription as NSString?, forKey: "3")
+        coder.encode(osDescription as NSString?, forKey: "4")
         coder.encode(Int(osMainVersion), forKey: "osMainVersion")
-        coder.encode(screenWidth, forKey: "screenWidth")
-        coder.encode(screenHeight, forKey: "screenHeight")
+        coder.encode(Int(deviceType), forKey: "8")
+        coder.encode(screenWidth, forKey: "6")
+        coder.encode(screenHeight, forKey: "7")
         coder.encode(screenScale, forKey: "screenScale")
-        if let screenshot = screenshot {
-            coder.encode(screenshot, forKey: "screenshot")
-        }
-        if let appIcon = appIcon {
-            coder.encode(appIcon, forKey: "appIcon")
-        }
+        coder.encode(Int(appInfoIdentifier), forKey: "appInfoIdentifier")
+        coder.encode(shouldUseCache, forKey: "shouldUseCache")
     }
 }

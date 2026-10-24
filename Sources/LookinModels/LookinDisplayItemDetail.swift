@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(AppKit)
+import AppKit
+#endif
 
 @objc(LookinDisplayItemDetail)
 public final class LookinDisplayItemDetail: NSObject, NSSecureCoding {
@@ -17,27 +20,64 @@ public final class LookinDisplayItemDetail: NSObject, NSSecureCoding {
     }
 
     public required init?(coder: NSCoder) {
-        self.displayItemOid = UInt(coder.decodeInteger(forKey: "displayItemOid"))
-        self.soloScreenshot = coder.decodeObject(forKey: "soloScreenshot")
-        self.groupScreenshot = coder.decodeObject(forKey: "groupScreenshot")
-        if let attrs = coder.decodeObject(of: [NSArray.self, LookinAttributesGroup.self], forKey: "attributesGroupList") as? [LookinAttributesGroup] {
-            self.attributesGroupList = attrs
+        if let num = coder.decodeObject(forKey: "displayItemOid") as? NSNumber {
+            self.displayItemOid = num.uintValue
+        } else {
+            self.displayItemOid = UInt(coder.decodeInteger(forKey: "displayItemOid"))
         }
-        if let customAttrs = coder.decodeObject(of: [NSArray.self, LookinAttributesGroup.self], forKey: "customAttrGroupList") as? [LookinAttributesGroup] {
-            self.customAttrGroupList = customAttrs
+
+        let solo = coder.decodeObject(forKey: "soloScreenshot")
+        if let data = solo as? Data {
+            #if canImport(AppKit)
+            self.soloScreenshot = NSImage(data: data) ?? data
+            #else
+            self.soloScreenshot = data
+            #endif
+        } else {
+            self.soloScreenshot = solo
         }
-        self.customDisplayTitle = coder.decodeObject(of: NSString.self, forKey: "customDisplayTitle") as String?
+
+        let group = coder.decodeObject(forKey: "groupScreenshot")
+        if let data = group as? Data {
+            #if canImport(AppKit)
+            self.groupScreenshot = NSImage(data: data) ?? data
+            #else
+            self.groupScreenshot = data
+            #endif
+        } else {
+            self.groupScreenshot = group
+        }
+
+        self.attributesGroupList = coder.decodeObject(forKey: "attributesGroupList") as? [LookinAttributesGroup]
+        self.customAttrGroupList = coder.decodeObject(forKey: "customAttrGroupList") as? [LookinAttributesGroup]
+        self.customDisplayTitle = coder.decodeObject(forKey: "customDisplayTitle") as? String
         self.failureCode = coder.decodeInteger(forKey: "failureCode")
         super.init()
     }
 
     public func encode(with coder: NSCoder) {
-        coder.encode(Int(displayItemOid), forKey: "displayItemOid")
+        coder.encode(NSNumber(value: displayItemOid), forKey: "displayItemOid")
         if let soloScreenshot = soloScreenshot {
+            #if canImport(AppKit)
+            if let img = soloScreenshot as? NSImage, let tiff = img.tiffRepresentation {
+                coder.encode(tiff, forKey: "soloScreenshot")
+            } else {
+                coder.encode(soloScreenshot, forKey: "soloScreenshot")
+            }
+            #else
             coder.encode(soloScreenshot, forKey: "soloScreenshot")
+            #endif
         }
         if let groupScreenshot = groupScreenshot {
+            #if canImport(AppKit)
+            if let img = groupScreenshot as? NSImage, let tiff = img.tiffRepresentation {
+                coder.encode(tiff, forKey: "groupScreenshot")
+            } else {
+                coder.encode(groupScreenshot, forKey: "groupScreenshot")
+            }
+            #else
             coder.encode(groupScreenshot, forKey: "groupScreenshot")
+            #endif
         }
         if let attributesGroupList = attributesGroupList {
             coder.encode(attributesGroupList as NSArray, forKey: "attributesGroupList")

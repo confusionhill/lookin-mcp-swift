@@ -1,5 +1,8 @@
 import Foundation
 import CoreGraphics
+#if canImport(AppKit)
+import AppKit
+#endif
 
 @objc(LookinDisplayItem)
 public final class LookinDisplayItem: NSObject, NSSecureCoding {
@@ -39,28 +42,46 @@ public final class LookinDisplayItem: NSObject, NSSecureCoding {
     }
 
     public required init?(coder: NSCoder) {
-        if let sub = coder.decodeObject(of: [NSArray.self, LookinDisplayItem.self], forKey: "subitems") as? [LookinDisplayItem] {
+        if let sub = (coder.decodeObject(forKey: "subitems") as? [LookinDisplayItem]) {
             self.subitems = sub
         }
-        self.isHidden = coder.decodeBool(forKey: "isHidden")
-        self.alpha = coder.decodeFloat(forKey: "alpha")
+        self.isHidden = coder.containsValue(forKey: "hidden") ? coder.decodeBool(forKey: "hidden") : coder.decodeBool(forKey: "isHidden")
+        self.alpha = coder.containsValue(forKey: "alpha") ? coder.decodeFloat(forKey: "alpha") : 1.0
+
         self.frame = coder.decodeRect(forKey: "frame")
         self.bounds = coder.decodeRect(forKey: "bounds")
-        self.soloScreenshot = coder.decodeObject(forKey: "soloScreenshot")
-        self.groupScreenshot = coder.decodeObject(forKey: "groupScreenshot")
-        self.viewObject = coder.decodeObject(of: LookinObject.self, forKey: "viewObject")
-        self.layerObject = coder.decodeObject(of: LookinObject.self, forKey: "layerObject")
-        self.hostViewControllerObject = coder.decodeObject(of: LookinObject.self, forKey: "hostViewControllerObject")
-        if let attrs = coder.decodeObject(of: [NSArray.self, LookinAttributesGroup.self], forKey: "attributesGroupList") as? [LookinAttributesGroup] {
-            self.attributesGroupList = attrs
+
+        let solo = coder.decodeObject(forKey: "soloScreenshot")
+        if let data = solo as? Data {
+            #if canImport(AppKit)
+            self.soloScreenshot = NSImage(data: data) ?? data
+            #else
+            self.soloScreenshot = data
+            #endif
+        } else {
+            self.soloScreenshot = solo
         }
-        if let customAttrs = coder.decodeObject(of: [NSArray.self, LookinAttributesGroup.self], forKey: "customAttrGroupList") as? [LookinAttributesGroup] {
-            self.customAttrGroupList = customAttrs
+
+        let group = coder.decodeObject(forKey: "groupScreenshot")
+        if let data = group as? Data {
+            #if canImport(AppKit)
+            self.groupScreenshot = NSImage(data: data) ?? data
+            #else
+            self.groupScreenshot = data
+            #endif
+        } else {
+            self.groupScreenshot = group
         }
+
+        self.viewObject = coder.decodeObject(forKey: "viewObject") as? LookinObject
+        self.layerObject = coder.decodeObject(forKey: "layerObject") as? LookinObject
+        self.hostViewControllerObject = coder.decodeObject(forKey: "hostViewControllerObject") as? LookinObject
+        self.attributesGroupList = coder.decodeObject(forKey: "attributesGroupList") as? [LookinAttributesGroup]
+        self.customAttrGroupList = coder.decodeObject(forKey: "customAttrGroupList") as? [LookinAttributesGroup]
         self.representedAsKeyWindow = coder.decodeBool(forKey: "representedAsKeyWindow")
         self.backgroundColor = coder.decodeObject(forKey: "backgroundColor")
-        self.shouldCaptureImage = coder.decodeBool(forKey: "shouldCaptureImage")
-        self.customDisplayTitle = coder.decodeObject(of: NSString.self, forKey: "customDisplayTitle") as String?
+        self.shouldCaptureImage = coder.containsValue(forKey: "shouldCaptureImage") ? coder.decodeBool(forKey: "shouldCaptureImage") : true
+        self.customDisplayTitle = coder.decodeObject(forKey: "customDisplayTitle") as? String
         super.init()
     }
 
@@ -68,6 +89,7 @@ public final class LookinDisplayItem: NSObject, NSSecureCoding {
         if let subitems = subitems {
             coder.encode(subitems as NSArray, forKey: "subitems")
         }
+        coder.encode(isHidden, forKey: "hidden")
         coder.encode(isHidden, forKey: "isHidden")
         coder.encode(alpha, forKey: "alpha")
         coder.encode(frame, forKey: "frame")

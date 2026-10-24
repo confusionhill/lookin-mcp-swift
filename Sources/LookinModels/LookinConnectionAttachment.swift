@@ -18,14 +18,16 @@ public class LookinConnectionAttachment: NSObject, NSSecureCoding {
     }
 
     public required init?(coder: NSCoder) {
-        self.dataType = coder.decodeInteger(forKey: "dataType")
-        self.data = coder.decodeObject(forKey: "data")
+        self.dataType = coder.containsValue(forKey: "1") ? coder.decodeInteger(forKey: "1") : coder.decodeInteger(forKey: "dataType")
+        self.data = coder.decodeObject(forKey: "0") ?? coder.decodeObject(forKey: "data")
         super.init()
     }
 
     public func encode(with coder: NSCoder) {
+        coder.encode(dataType, forKey: "1")
         coder.encode(dataType, forKey: "dataType")
         if let data = data {
+            coder.encode(data, forKey: "0")
             coder.encode(data, forKey: "data")
         }
     }
@@ -47,10 +49,21 @@ public final class LookinConnectionResponseAttachment: LookinConnectionAttachmen
 
     public required init?(coder: NSCoder) {
         self.lookinServerVersion = coder.decodeInt32(forKey: "lookinServerVersion")
-        self.error = coder.decodeObject(of: NSError.self, forKey: "error")
+        self.error = coder.decodeObject(forKey: "error") as? NSError
         self.appIsInBackground = coder.decodeBool(forKey: "appIsInBackground")
-        self.dataTotalCount = UInt(coder.decodeInteger(forKey: "dataTotalCount"))
-        self.currentDataCount = UInt(coder.decodeInteger(forKey: "currentDataCount"))
+
+        if let num = coder.decodeObject(forKey: "dataTotalCount") as? NSNumber {
+            self.dataTotalCount = num.uintValue
+        } else {
+            self.dataTotalCount = UInt(coder.decodeInteger(forKey: "dataTotalCount"))
+        }
+
+        if let num = coder.decodeObject(forKey: "currentDataCount") as? NSNumber {
+            self.currentDataCount = num.uintValue
+        } else {
+            self.currentDataCount = UInt(coder.decodeInteger(forKey: "currentDataCount"))
+        }
+
         super.init(coder: coder)
     }
 
@@ -61,7 +74,7 @@ public final class LookinConnectionResponseAttachment: LookinConnectionAttachmen
             coder.encode(error, forKey: "error")
         }
         coder.encode(appIsInBackground, forKey: "appIsInBackground")
-        coder.encode(Int(dataTotalCount), forKey: "dataTotalCount")
-        coder.encode(Int(currentDataCount), forKey: "currentDataCount")
+        coder.encode(NSNumber(value: dataTotalCount), forKey: "dataTotalCount")
+        coder.encode(NSNumber(value: currentDataCount), forKey: "currentDataCount")
     }
 }
