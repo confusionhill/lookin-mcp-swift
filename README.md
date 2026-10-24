@@ -127,22 +127,40 @@ Then run `pod install`.
 
 ## Installation & Setup
 
-### 1. Build from Source
+### Option A: Download Pre-built Binary (Recommended)
+
+Download the latest compiled macOS binary directly from [GitHub Releases](https://github.com/confusionhill/lookin-mcp-swift/releases):
 
 ```bash
-git clone https://github.com/your-username/lookin-mcp.git
-cd lookin-mcp
+# Download and extract the latest release archive
+curl -LO https://github.com/confusionhill/lookin-mcp-swift/releases/latest/download/lookin-mcp-v0.1.0-macos.tar.gz
+tar -xzvf lookin-mcp-v0.1.0-macos.tar.gz
+chmod +x lookin-mcp
+
+# (Optional) Install system-wide:
+# sudo mv lookin-mcp /usr/local/bin/
+```
+
+### Option B: Build from Source
+
+Requirements: macOS 13+ with Xcode 15+ / Swift 5.10 or 6.0+.
+
+```bash
+git clone https://github.com/confusionhill/lookin-mcp-swift.git
+cd lookin-mcp-swift
 swift build -c release
 ```
 
-The compiled binary will be located at `.build/release/lookin-mcp`.
+The compiled binary will be located at `.build/release/lookin-mcp` (or `$(swift build -c release --show-bin-path)/lookin-mcp`).
 
-### 2. Configure with AI Agents
+---
+
+### Configure with AI Agents
 
 #### Claude Code
 Add to your project or user configuration:
 ```bash
-claude mcp add lookin-mcp -- /absolute/path/to/lookin-mcp/.build/release/lookin-mcp
+claude mcp add lookin-mcp -- /path/to/lookin-mcp
 ```
 
 #### Antigravity / Cursor (`mcp_config.json` or `~/.cursor/mcp.json`)
@@ -150,7 +168,7 @@ claude mcp add lookin-mcp -- /absolute/path/to/lookin-mcp/.build/release/lookin-
 {
   "mcpServers": {
     "lookin-mcp": {
-      "command": "/absolute/path/to/lookin-mcp/.build/release/lookin-mcp"
+      "command": "/path/to/lookin-mcp"
     }
   }
 }
